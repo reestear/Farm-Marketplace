@@ -1,0 +1,40 @@
+version: '3.9'
+
+services:
+  app:
+    build:
+      context: ./farmer-market-server
+      dockerfile: ./.build/Dockerfile
+    ports:
+      - "8000:8000"
+    # environment:
+    #   - DEBUG=1
+    env_file:
+      - .env
+    volumes:
+      - static:/app/static
+      - database:/app/database
+  
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: ./.build/Dockerfile
+    volumes:
+      - static:/static
+    ports:
+      - "80:80"
+    depends_on:
+      - app
+  # db:
+  #   image: postgres:12
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   environment:
+  #     POSTGRES_DB: postgres
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: postgres
+
+volumes:
+  static:
+  database:
+    driver: local
