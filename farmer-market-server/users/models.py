@@ -1,6 +1,7 @@
 # users/models.py
 import uuid
 
+from core.models.date_stamped_model import DateStampedModel
 from django.contrib.auth.models import (
     AbstractBaseUser,
     BaseUserManager,
@@ -48,14 +49,19 @@ class UserManager(BaseUserManager):
         )
 
 
-class User(AbstractBaseUser, PermissionsMixin):
-    USER_TYPE_CHOICES = (
-        ("Farmer", "Farmer"),
-        ("Buyer", "Buyer"),
-        ("Administrator", "Administrator"),
-        ("Superuser", "Superuser"),
-    )
+class UserType(models.TextChoices):
+    FARMER = "Farmer", "Farmer"
+    BUYER = "Buyer", "Buyer"
+    ADMINISTRATOR = "Administrator", "Administrator"
+    SUPERUSER = "Superuser", "Superuser"
 
+
+class Status(models.TextChoices):
+    ACTIVE = "Active", "Active"
+    INACTIVE = "Inactive", "Inactive"
+
+
+class User(AbstractBaseUser, PermissionsMixin, DateStampedModel):
     id = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False, unique=True
     )
@@ -69,22 +75,18 @@ class User(AbstractBaseUser, PermissionsMixin):
     phone_number = models.CharField(
         max_length=15, verbose_name="Phone Number", validators=[]
     )
-    created_at = models.DateTimeField(
-        auto_now_add=True, verbose_name="Registration Date"
-    )
-    updated_at = models.DateTimeField(auto_now=True, verbose_name="Last Update Date")
     status = models.CharField(
         max_length=10,
-        choices=(("Active", "Active"), ("Inactive", "Inactive")),
-        default="Active",
+        choices=Status.choices,
+        default=Status.ACTIVE,
         verbose_name="Status",
     )
     user_type = models.CharField(
         max_length=20,
-        choices=USER_TYPE_CHOICES,
+        choices=UserType.choices,
         null=False,
         blank=False,
-        default="Buyer",
+        default=UserType.BUYER,
         verbose_name="User Type",
     )
 

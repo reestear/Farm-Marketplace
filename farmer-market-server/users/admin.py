@@ -30,6 +30,43 @@ class AdminUser(UserAdmin):
         "id",
         "email",
     )
+
+    add_fieldsets = (
+        (
+            None,
+            {
+                "classes": ("wide",),
+                "fields": (
+                    "email",
+                    "first_name",
+                    "last_name",
+                    "password1",
+                    "password2",
+                ),
+            },
+        ),
+        (
+            "Персональная информация",
+            {
+                "fields": (
+                    "phone_number",
+                    "is_active",
+                )
+            },
+        ),
+        (
+            "Разрешения",
+            {
+                "fields": (
+                    "is_superuser",
+                    "is_staff",
+                    "groups",
+                    "user_type",
+                )
+            },
+        ),
+    )
+
     fieldsets = (
         (
             None,
@@ -62,8 +99,6 @@ class AdminUser(UserAdmin):
         "updated_at",
         "is_superuser",
         "is_staff",
-        "is_active",
-        "user_type",
     )
 
     ordering = ("email",)
