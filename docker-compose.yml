@@ -13,6 +13,7 @@ services:
     volumes:
       - static:/app/static
       # - database:/app/database
+      - ./farmer-market-server:/app
     depends_on:
       - postgres_db
   
