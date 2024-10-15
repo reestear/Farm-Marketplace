@@ -1,6 +1,5 @@
 from django.db import models
-
-from .order_model import Order
+from orders.types.order_types import OrderStatusType
 
 
 class PaymentMethod(models.TextChoices):
@@ -15,10 +14,13 @@ class Payment(models.Model):
     """
 
     order = models.OneToOneField(
-        Order,
+        "orders.Order",
         on_delete=models.SET_NULL,
         null=True,
-        related_name="payments",
+        related_name="payment",
+        limit_choices_to={
+            "status__in": [OrderStatusType.ORDERED, OrderStatusType.DELIVERED],
+        },
     )
 
     payment_date = models.DateTimeField(

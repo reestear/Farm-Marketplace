@@ -3,7 +3,7 @@
         "venv": true,
     },
     "flake8.args": [
-        "--ignore=E203,E501",
+        "--ignore=E203,E501,W503",
         "--exclude=obsfeare-env",
     ],
     "python.analysis.typeCheckingMode": "basic",

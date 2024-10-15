@@ -1,6 +1,5 @@
 from django.db import models
-
-from .order_model import Order
+from orders.types.order_types import OrderStatusType
 
 
 class DeliveryStatus(models.TextChoices):
@@ -14,21 +13,30 @@ class Delivery(models.Model):
     """
 
     order = models.OneToOneField(
-        Order,
+        "orders.Order",
         on_delete=models.SET_NULL,
         null=True,
-        related_name="deliveries",
+        related_name="delivery",
+        limit_choices_to={
+            "status__in": [OrderStatusType.ORDERED, OrderStatusType.DELIVERED],
+        },
     )
 
     delivery_date = models.DateTimeField(
-        auto_now_add=True,
+        auto_now_add=False,
         verbose_name="Delivery Date",
     )
 
     status = models.CharField(
         max_length=10,
         choices=DeliveryStatus.choices,
+        default=DeliveryStatus.DELIVERING,
         verbose_name="Delivery Status",
+    )
+
+    address = models.CharField(
+        max_length=200,
+        verbose_name="Delivery Address",
     )
 
     class Meta:
