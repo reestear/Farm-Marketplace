@@ -51,6 +51,4 @@ class Farm(models.Model):
         verbose_name_plural = "Farms"
 
     def __str__(self):
-        return (
-            f"{self.name} (owned by {self.farmer.first_name} {self.farmer.last_name})"
-        )
+        return f"{self.name}"

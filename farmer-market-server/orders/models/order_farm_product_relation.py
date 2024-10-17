@@ -7,6 +7,9 @@ from products.models import Product, UnitType
 
 
 class OrderFarmProduct(models.Model):
+    """
+    Ternary relation model for storing the products of a farm in an order.
+    """
 
     order = models.ForeignKey(
         "orders.Order",
