@@ -10,43 +10,28 @@ from django.contrib.auth.models import (
 from django.core.validators import EmailValidator
 from django.db import models
 
+# users/models.py
+
 
 class UserManager(BaseUserManager):
     use_in_migrations = True
 
-    def create(
-        self,
-        email,
-        first_name,
-        last_name,
-        phone_number,
-        password,
-        user_type,
-        **extra_fields,
-    ):
+    def create_user(self, email, password=None, **extra_fields):
         if not email:
             raise ValueError("Users must have an email address")
         email = self.normalize_email(email)
-        user = self.model(
-            email=email,
-            first_name=first_name,
-            last_name=last_name,
-            phone_number=phone_number,
-            user_type=user_type,
-            **extra_fields,
-        )
+        user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.status = "Active"
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email, password, **extra_fields):
+    def create_superuser(self, email, password=None, **extra_fields):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
+        extra_fields.setdefault("user_type", "Superuser")
 
-        return self.create(
-            email, password=password, user_type="Superuser", **extra_fields
-        )
+        return self.create_user(email, password, **extra_fields)
 
 
 class UserType(models.TextChoices):
@@ -105,7 +90,7 @@ class User(AbstractBaseUser, PermissionsMixin, DateStampedModel):
         verbose_name_plural = "Users"
 
     def __str__(self):
-        return f"{self.email} ({self.user_type})"
+        return f"{self.email} ({self.user_type} | {self.password})"
 
 
 class BuyerManager(UserManager):
