@@ -11,8 +11,8 @@ class CustomLoginSerializer(LoginSerializer):
     username = None  # Remove the username field entirely
     email = serializers.EmailField(required=True)  # Use email instead
 
-    def get_authentication_method(self):
-        return "email"  # Use email for authentication
+    # def get_authentication_method(self):
+    #     return "email"  # Use email for authentication
 
 
 class CustomRegisterSerializer(RegisterSerializer):

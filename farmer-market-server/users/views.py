@@ -40,6 +40,6 @@ from .serializers import UserSerializer
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    lookup_field = "email"
-    lookup_url_kwarg = "email"
+    lookup_field = "id"
+    lookup_url_kwarg = "id"
     http_method_names = ["get", "post", "patch", "delete"]

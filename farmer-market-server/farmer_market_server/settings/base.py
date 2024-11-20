@@ -32,19 +32,23 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.sites",
     "rest_framework",
+    # documentation
     "drf_spectacular",
+    # authentification
     "rest_framework.authtoken",
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
     "dj_rest_auth.registration",
     "dj_rest_auth",
-    "core",
+    # apps
+    "core.apps.CoreConfig",
     "users",
     "products",
     "farms",
     "orders",
     "reviews",
+    "authentication",
 ]
 
 SITE_ID = 1
@@ -68,25 +72,37 @@ ACCOUNT_USER_MODEL_USERNAME_FIELD = "email"
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_AUTHENTICATION_METHOD = "email"
-ACCOUNT_EMAIL_VERIFICATION = "none"
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+ACCOUNT_ADAPTER = "authentication.adapters.CustomAccountAdapter"
+
+
+AUTH_USER_MODEL = "users.User"
 
 AUTHENTICATION_BACKENDS = (
     "django.contrib.auth.backends.ModelBackend",
     "allauth.account.auth_backends.AuthenticationBackend",
 )
 
+# EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"  # Replace with your SMTP server
+EMAIL_PORT = 587  # For TLS
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = "ruslahn.q@gmail.com"
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+
 
 REST_AUTH = {
-    "LOGIN_SERIALIZER": "core.utils.serializers_utils.CustomLoginSerializer",
-    "REGISTER_SERIALIZER": "core.utils.serializers_utils.CustomRegisterSerializer",
+    "LOGIN_SERIALIZER": "authentication.serializers.CustomLoginSerializer",
+    "REGISTER_SERIALIZER": "authentication.serializers.CustomRegisterSerializer",
     "USE_JWT": True,
     "JWT_AUTH_COOKIE": "acc_tok",
     "JWT_AUTH_REFRESH_COOKIE": "ref_tok",
 }
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
     "ROTATE_REFRESH_TOKENS": False,
     "BLACKLIST_AFTER_ROTATION": True,
     "ALGORITHM": "HS256",
@@ -146,8 +162,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-AUTH_USER_MODEL = "users.User"
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
@@ -173,12 +187,4 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "Farmer Market API",
     "DESCRIPTION": "Farmer Market API",
     "VERSION": "1.0.0",
-    # "SERVE_INCLUDE_SCHEMA": False,
-    # "COMPONENT_SPLIT_REQUEST": True,
-    # "SECURITY": [
-    #     {"Bearer": []},
-    # ],
-    # "SWAGGER_UI_SETTINGS": {
-    #     "persistAuthorization": True,  # Keep tokens during testing
-    # },
 }

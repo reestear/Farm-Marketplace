@@ -15,6 +15,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
+from authentication.views import CustomConfirmEmailView
 from django.contrib import admin
 from django.urls import include, path
 from drf_spectacular.views import (
@@ -40,6 +41,5 @@ urlpatterns = [
         SpectacularRedocView.as_view(url_name="schema"),
         name="redoc",
     ),
-    path("api/auth/", include("dj_rest_auth.urls")),
-    path("api/auth/registration/", include("dj_rest_auth.registration.urls")),
+    path("api/", include("authentication.urls")),
 ]
