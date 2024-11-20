@@ -1,18 +1,53 @@
-# users/serializers.py
 from dj_rest_auth.registration.serializers import RegisterSerializer
-
-# users/serializers.py (add this if you're customizing login)
-from dj_rest_auth.serializers import LoginSerializer
+from dj_rest_auth.serializers import LoginSerializer, UserDetailsSerializer
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from users.models import User
 
 
-class CustomLoginSerializer(LoginSerializer):
-    username = None  # Remove the username field entirely
-    email = serializers.EmailField(required=True)  # Use email instead
+class CustomUserDetailsSerializer(UserDetailsSerializer):
+    class Meta(UserDetailsSerializer.Meta):
+        fields = UserDetailsSerializer.Meta.fields + (
+            "email",
+            "first_name",
+            "last_name",
+            "user_type",
+            "phone_number",
+        )
 
-    # def get_authentication_method(self):
-    #     return "email"  # Use email for authentication
+    def to_representation(self, instance):
+        print("CustomUserDetailsSerializer is being called.")
+        return super().to_representation(instance)
+
+
+# class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+#     def validate(self, attrs):
+#         data = super().validate(attrs)
+#         user = self.user
+#         data["user"] = {
+#             "pk": str(user.id),
+#             "email": user.email,
+#             "first_name": user.first_name,
+#             "last_name": user.last_name,
+#             "user_type": user.user_type,
+#         }
+#         return data
+
+#     @classmethod
+#     def get_token(cls, user):
+#         token = super().get_token(user)
+#         # Add custom claims to the token payload
+#         token["first_name"] = user.first_name
+#         token["last_name"] = user.last_name
+#         token["user_type"] = (
+#             user.user_type
+#         )  # Ensure this field exists on your User model
+#         return token
+
+
+class CustomLoginSerializer(LoginSerializer):
+    username = None
+    email = serializers.EmailField(required=True)
 
 
 class CustomRegisterSerializer(RegisterSerializer):

@@ -1,3 +1,4 @@
+from dj_rest_auth.views import PasswordResetConfirmView
 from django.urls import include, path
 
 from .views import CustomConfirmEmailView, CustomRegisterView
@@ -11,4 +12,9 @@ urlpatterns = [
         name="account_confirm_email",
     ),
     path("auth/accounts/", include("allauth.urls")),
+    path(
+        "auth/password/reset/confirm/<str:uidb64>/<str:token>",
+        PasswordResetConfirmView.as_view(),
+        name="password_reset_confirm",
+    ),
 ]

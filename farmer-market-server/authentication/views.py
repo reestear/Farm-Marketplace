@@ -1,9 +1,20 @@
 from allauth.account.utils import complete_signup
 from allauth.account.views import ConfirmEmailView
 from dj_rest_auth.registration.views import RegisterView
+from dj_rest_auth.views import PasswordResetView
 from django.db import transaction
 from django.shortcuts import redirect
+from django.urls import reverse
 from rest_framework.exceptions import ValidationError
+
+
+class CustomPasswordResetView(PasswordResetView):
+    def post(self, request, *args, **kwargs):
+        # Customize the behavior here
+        response = super().post(request, *args, **kwargs)
+        # Example: add custom logging or modify the response
+        print("Custom Password Reset View Called")
+        return response
 
 
 class CustomRegisterView(RegisterView):
