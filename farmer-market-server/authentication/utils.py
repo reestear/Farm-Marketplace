@@ -1,5 +1,7 @@
 import re
 
+from django.conf import settings
+
 
 def replace_url_domain(url: str) -> str:
     """
@@ -12,4 +14,4 @@ def replace_url_domain(url: str) -> str:
     Returns:
         str: The modified URL with the replaced word.
     """
-    return re.sub(r"//([^/]+)/", "//localhost/", url)
+    return re.sub(r"//([^/]+)/", f"//{settings.APPLICATION_HOST}/", url)

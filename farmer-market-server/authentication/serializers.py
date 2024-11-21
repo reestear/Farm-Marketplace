@@ -1,48 +1,49 @@
 from dj_rest_auth.registration.serializers import RegisterSerializer
-from dj_rest_auth.serializers import LoginSerializer, UserDetailsSerializer
+from dj_rest_auth.serializers import (
+    JWTSerializer,
+    LoginSerializer,
+    UserDetailsSerializer,
+)
 from rest_framework import serializers
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from users.models import User
+from rest_framework_simplejwt.tokens import RefreshToken
+from users.models import User, UserType
+
+
+class CustomJWTSerializer(JWTSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = RefreshToken.for_user(user)
+
+        # Add custom claims
+        token["email"] = user.email
+        token["user_type"] = user.user_type
+
+        return token
 
 
 class CustomUserDetailsSerializer(UserDetailsSerializer):
     class Meta(UserDetailsSerializer.Meta):
         fields = UserDetailsSerializer.Meta.fields + (
+            "id",
             "email",
             "first_name",
             "last_name",
             "user_type",
             "phone_number",
+            "is_active",
+            "farmer_status",
+        )
+
+        read_only_fields = UserDetailsSerializer.Meta.read_only_fields + (
+            "id",
+            "email",
+            "user_type",
+            "is_active",
+            "farmer_status",
         )
 
     def to_representation(self, instance):
-        print("CustomUserDetailsSerializer is being called.")
         return super().to_representation(instance)
-
-
-# class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-#     def validate(self, attrs):
-#         data = super().validate(attrs)
-#         user = self.user
-#         data["user"] = {
-#             "pk": str(user.id),
-#             "email": user.email,
-#             "first_name": user.first_name,
-#             "last_name": user.last_name,
-#             "user_type": user.user_type,
-#         }
-#         return data
-
-#     @classmethod
-#     def get_token(cls, user):
-#         token = super().get_token(user)
-#         # Add custom claims to the token payload
-#         token["first_name"] = user.first_name
-#         token["last_name"] = user.last_name
-#         token["user_type"] = (
-#             user.user_type
-#         )  # Ensure this field exists on your User model
-#         return token
 
 
 class CustomLoginSerializer(LoginSerializer):
@@ -59,9 +60,9 @@ class CustomRegisterSerializer(RegisterSerializer):
     phone_number = serializers.CharField(required=True)
     user_type = serializers.ChoiceField(
         choices=[
-            ("Buyer", "Buyer"),
-            ("Farmer", "Farmer"),
-            ("Administrator", "Administrator"),
+            (UserType.ADMINISTRATOR, "Administrator"),
+            (UserType.BUYER, "Buyer"),
+            (UserType.FARMER, "Farmer"),
         ],
         required=True,
     )

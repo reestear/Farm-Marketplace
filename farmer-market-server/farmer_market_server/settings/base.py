@@ -51,16 +51,10 @@ INSTALLED_APPS = [
     "authentication",
 ]
 
-CUSTOM_PASSWORD_RESET_CONFIRM = (
-    "http://localhost:8000/api/auth/password/reset/confirm/{uid}/{token}"
-)
-
-DOMAIN = "http://localhost:80"
-
 SITE_ID = 1
-SITE_DOMAIN = "127.0.0.1"  # Replace with your actual domain
-BASE_URL = f"http://{SITE_DOMAIN}"
 
+APPLICATION_HOST = os.getenv("APPLICATION_HOST")
+LOGIN_REDIRECT_URL = os.getenv("LOGIN_REDIRECT_URL")
 
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
@@ -80,7 +74,6 @@ ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_AUTHENTICATION_METHOD = "email"
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 ACCOUNT_ADAPTER = "authentication.adapters.CustomAccountAdapter"
-
 
 AUTH_USER_MODEL = "users.User"
 
@@ -105,9 +98,8 @@ REST_AUTH = {
     "USE_JWT": True,
     "JWT_AUTH_COOKIE": "acc_tok",
     "JWT_AUTH_REFRESH_COOKIE": "ref_tok",
-    # "JWT_SERIALIZER": "authentication.serializers.CustomJWTSerializer",
     "USER_DETAILS_SERIALIZER": "authentication.serializers.CustomUserDetailsSerializer",
-    "PASSWORD_RESET_CONFIRM_URL": "http://localhost/api/auth/password/reset/confirm/{uid}/{token}/",
+    "JWT_TOKEN_CLAIMS_SERIALIZER": "authentication.serializers.CustomJWTSerializer",
 }
 
 SIMPLE_JWT = {
@@ -120,7 +112,7 @@ SIMPLE_JWT = {
     "AUTH_HEADER_TYPES": ("Bearer",),
     "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
     "TOKEN_USER_CLASS": "users.User",
-    # "TOKEN_OBTAIN_SERIALIZER": "authentication.serializers.CustomTokenObtainPairSerializer",
+    "TOKEN_OBTAIN_SERIALIZER": "authentication.serializers.MyTokenObtainPairSerializer",
 }
 
 

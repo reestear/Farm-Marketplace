@@ -40,7 +40,6 @@ class UserManager(BaseUserManager):
 
         print("setting password: ", password, flush=True)
         user.set_password(password)
-        user.status = "Active"
         user.save(using=self._db)
         return user
 
@@ -60,9 +59,10 @@ class UserType(models.TextChoices):
     SUPERUSER = "Superuser", "Superuser"
 
 
-class Status(models.TextChoices):
-    ACTIVE = "Active", "Active"
-    INACTIVE = "Inactive", "Inactive"
+class FarmerStatus(models.TextChoices):
+    PENDING = "Pending", "Pending"
+    APPROVED = "Approved", "Approved"
+    REJECTED = "Rejected", "Rejected"
 
 
 class User(AbstractBaseUser, PermissionsMixin, DateStampedModel):
@@ -79,11 +79,14 @@ class User(AbstractBaseUser, PermissionsMixin, DateStampedModel):
     phone_number = models.CharField(
         max_length=15, verbose_name="Phone Number", validators=[]
     )
-    status = models.CharField(
+    farmer_status = models.CharField(
         max_length=10,
-        choices=Status.choices,
-        default=Status.ACTIVE,
-        verbose_name="Status",
+        choices=FarmerStatus.choices,
+        default=FarmerStatus.PENDING,
+        verbose_name="Farmer Status",
+        null=True,
+        blank=True,
+        help_text="Applicable only to Farmers.",
     )
     user_type = models.CharField(
         max_length=20,
@@ -107,6 +110,28 @@ class User(AbstractBaseUser, PermissionsMixin, DateStampedModel):
     class Meta:
         verbose_name = "User"
         verbose_name_plural = "Users"
+
+        constraints = [
+            models.CheckConstraint(
+                check=(
+                    models.Q(user_type=UserType.FARMER, farmer_status__isnull=False)
+                    | models.Q(
+                        user_type__in=[
+                            UserType.BUYER,
+                            UserType.ADMINISTRATOR,
+                            UserType.SUPERUSER,
+                        ],
+                        farmer_status__isnull=True,
+                    )
+                ),
+                name="status_only_for_farmers",
+            )
+        ]
+
+    def save(self, *args, **kwargs):
+        if self.user_type != UserType.FARMER:
+            self.farmer_status = None
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.email} ({self.user_type})"
