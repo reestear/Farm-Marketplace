@@ -1,0 +1,22 @@
+:80 {
+    # Set the max body size for client uploads
+    @largeFiles {
+        header Content-Length 10000000
+    }
+
+    # Serve static files for /api/static/
+    handle_path /api/static/* {
+        root * /var/www
+        file_server
+    }
+
+    # Proxy all other requests to the backend application
+    handle {
+        reverse_proxy farmers-market-backend.railway.internal {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+}
