@@ -41,11 +41,18 @@ class Product(models.Model):
         blank=True,
     )
 
-    image_url = models.URLField(
-        max_length=500,
-        verbose_name="Image URL",
+    image = models.ImageField(
+        upload_to="products/",
+        verbose_name="Product Image",
         blank=True,
+        null=True,
+        # validators=[FileExtensionValidator(allowed_extensions=["jpg", "jpeg", "png"])]
+        # default="products/default.jpg"
     )
+
+    # def product_image_upload_to(self, filename):
+    #     # Store files under products/<product_id>/<filename>
+    #     return f"products/{self.id}/{filename}"
 
     class Meta:
         verbose_name = "Product"

@@ -45,10 +45,6 @@ class CustomConfirmEmailView(ConfirmEmailView):
             user.is_active = True
             user.save(update_fields=["is_active"])
 
-        if user and user.user_type == UserType.FARMER:
-            user.farmer_status = FarmerStatus.APPROVED
-            user.save(update_fields=["farmer_status"])
-
         return redirect(settings.LOGIN_REDIRECT_URL)
 
     def get(self, *args, **kwargs):

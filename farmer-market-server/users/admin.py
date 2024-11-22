@@ -90,6 +90,7 @@ class AdminUser(UserAdmin):
                     "is_staff",
                     "groups",
                     "user_type",
+                    "farmer_status",
                 )
             },
         ),

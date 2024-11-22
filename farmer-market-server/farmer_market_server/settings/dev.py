@@ -32,3 +32,5 @@ STATIC_URL = "/api/static/"
 
 # Email backend
 # EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+print("DEV SETTINGS LOADED", flush=True)

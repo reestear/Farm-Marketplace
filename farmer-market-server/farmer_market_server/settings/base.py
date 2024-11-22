@@ -49,11 +49,12 @@ INSTALLED_APPS = [
     "orders",
     "reviews",
     "authentication",
+    # files
+    "storages",
 ]
 
 SITE_ID = 1
 
-APPLICATION_HOST = os.getenv("APPLICATION_HOST")
 LOGIN_REDIRECT_URL = os.getenv("LOGIN_REDIRECT_URL")
 
 REST_FRAMEWORK = {
@@ -73,7 +74,7 @@ ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_AUTHENTICATION_METHOD = "email"
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
-ACCOUNT_ADAPTER = "authentication.adapters.CustomAccountAdapter"
+# ACCOUNT_ADAPTER = "authentication.adapters.CustomAccountAdapter"
 
 AUTH_USER_MODEL = "users.User"
 
@@ -87,10 +88,8 @@ EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"  # Replace with your SMTP server
 EMAIL_PORT = 587  # For TLS
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = "ruslahn.q@gmail.com"
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
-DEFAULT_FROM_EMAIL = "no-reply@localhost"
-
 
 REST_AUTH = {
     "LOGIN_SERIALIZER": "authentication.serializers.CustomLoginSerializer",

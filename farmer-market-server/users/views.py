@@ -1,7 +1,9 @@
-from core.permissions.admin_permissions import IsAdministrator
-from core.utils.response_utils import SuccessResponse
-from drf_spectacular.utils import extend_schema, extend_schema_view
+from core.permissions import IsAdministrator
+from core.utils.response_utils import ErrorResponse, SuccessResponse
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
 from rest_framework import viewsets
+from rest_framework.exceptions import ValidationError
 from rest_framework.views import APIView
 
 from .models import FarmerStatus, User, UserType
@@ -13,6 +15,18 @@ from .serializers import UserSerializer
         summary="List Users",
         description="List all users",
         responses={200: UserSerializer(many=True)},
+        parameters=[
+            OpenApiParameter(
+                name="user_type",
+                type=OpenApiTypes.STR,
+                description="Filter by user type [Farmer, Buyer, Administrator]",
+            ),
+            OpenApiParameter(
+                name="farmer_status",
+                type=OpenApiTypes.STR,
+                description="Filter by farmer status [Pending, Approved, Rejected] (requires user_type=Farmer)",
+            ),
+        ],
     ),
     retrieve=extend_schema(
         summary="Retrieve User",
@@ -49,6 +63,23 @@ class UserViewSet(viewsets.ModelViewSet):
     lookup_url_kwarg = "id"
     http_method_names = ["get", "post", "patch", "delete"]
 
+    def get_queryset(self):
+        queryset = User.objects.all()
+        user_type = self.request.query_params.get("user_type")
+        farmer_status = self.request.query_params.get("farmer_status")
+
+        if user_type:
+            if user_type not in [choice[0] for choice in UserType.choices]:
+                raise ValidationError("Invalid user_type.")
+            queryset = queryset.filter(user_type=user_type)
+
+            if user_type == UserType.FARMER and farmer_status:
+                if farmer_status not in [choice[0] for choice in FarmerStatus.choices]:
+                    raise ValidationError("Invalid farmer_status.")
+                queryset = queryset.filter(farmer_status=farmer_status)
+
+        return queryset
+
 
 class AdminStatisticsView(APIView):
     permission_classes = [IsAdministrator]
@@ -78,3 +109,41 @@ class AdminStatisticsView(APIView):
                 ).count(),
             }
         )
+
+
+class AdminApproveFarmerView(APIView):
+    permission_classes = [IsAdministrator]
+
+    @extend_schema(
+        summary="Approve Farmer",
+        description="Approve a farmer",
+        responses={200: UserSerializer()},
+    )
+    def post(self, request, id):
+        user = User.objects.get(id=id)
+
+        if user.user_type != UserType.FARMER:
+            return ErrorResponse({"error": "Only farmers can be approved"})
+
+        user.farmer_status = FarmerStatus.APPROVED
+        user.save(update_fields=["farmer_status"])
+        return SuccessResponse(UserSerializer(user).data)
+
+
+class AdminRejectFarmerView(APIView):
+    permission_classes = [IsAdministrator]
+
+    @extend_schema(
+        summary="Reject Farmer",
+        description="Reject a farmer",
+        responses={200: UserSerializer()},
+    )
+    def post(self, request, id):
+        user = User.objects.get(id=id)
+
+        if user.user_type != UserType.FARMER:
+            return ErrorResponse({"error": "Only farmers can be rejected"})
+
+        user.farmer_status = FarmerStatus.REJECTED
+        user.save(update_fields=["farmer_status"])
+        return SuccessResponse(UserSerializer(user).data)

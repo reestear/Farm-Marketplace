@@ -12,15 +12,12 @@ class ProductSerializer(serializers.ModelSerializer):
             "description",
             "unit_type",
             "category",
+            "image",
         ]
-        read_only_fields = ["id"]
+        read_only_fields = ["id", "image"]
 
 
-# class ProductUploadPhotoSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Product
-#         fields = [
-#             "id",
-#             "image_url",
-#         ]
-#         read_only_fields = ["id"]
+class ProductImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = ["image"]
