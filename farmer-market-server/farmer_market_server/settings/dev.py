@@ -5,9 +5,6 @@ from .base import *
 DEBUG = True
 ALLOWED_HOSTS = ["*"]
 
-CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",")
-CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
-
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 
 DATABASES = {
