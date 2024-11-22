@@ -12,7 +12,7 @@
 
     # Proxy all other requests to the backend application
     handle {
-        reverse_proxy farmers-market-backend.railway.internal {
+        reverse_proxy farmers-market-backend-production.up.railway.app {
             header_up Host {host}
             header_up X-Real-IP {remote_host}
             header_up X-Forwarded-For {remote_host}
