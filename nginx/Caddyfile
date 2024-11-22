@@ -1,22 +1,27 @@
+{
+    # Global options block (optional)
+    # Change default options for all sites, e.g., logging or timeouts
+    auto_https disable_redirects  # If HTTPS isn't configured
+}
+
 :80 {
-    # Set the max body size for client uploads
-    @largeFiles {
-        header Content-Length 10000000
+    # Set maximum body size for client requests
+    @large_body {
+        header Content-Length > 10M
     }
+    respond @large_body 413
 
     # Serve static files for /api/static/
     handle_path /api/static/* {
-        root * /var/www
+        root * /var/www/static
         file_server
     }
 
-    # Proxy all other requests to the backend application
-    handle {
-        reverse_proxy farmers-market-backend-production.up.railway.app {
-            header_up Host {host}
-            header_up X-Real-IP {remote_host}
-            header_up X-Forwarded-For {remote_host}
-            header_up X-Forwarded-Proto {scheme}
-        }
+    # Proxy everything else to the upstream app
+    reverse_proxy * farmers-market-backend-production.up.railway.app {
+        header_up Host {host}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
     }
 }
