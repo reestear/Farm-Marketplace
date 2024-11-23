@@ -1,8 +1,0 @@
-[phases.install]
-apt = ["caddy"]
-
-[phases.build]
-commands = []
-
-[phases.start]
-commands = ["caddy run --config Caddyfile"]
