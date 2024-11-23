@@ -12,8 +12,8 @@
 
     # Proxy all other requests to the backend application
     handle {
-        reverse_proxy https://farmers-market-backend.railway.internal {
-            header_up Host {upstream_host}
+        reverse_proxy https://farmers-market-backend {
+            header_up Host {host}
             header_up X-Real-IP {remote_host}
             header_up X-Forwarded-For {remote_host}
             header_up X-Forwarded-Proto {scheme}
