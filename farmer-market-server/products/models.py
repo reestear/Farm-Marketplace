@@ -1,5 +1,6 @@
 import uuid
 
+from django.core.validators import FileExtensionValidator
 from django.db import models
 
 
@@ -8,6 +9,10 @@ class UnitType(models.TextChoices):
     GRAMS = "g", "Grams"
     LITERS = "l", "Liters"
     PIECES = "pcs", "Pieces"
+
+
+def product_image_upload_to(inst, filename):
+    return f"products/{inst.id}/{filename}"
 
 
 class Product(models.Model):
@@ -42,17 +47,12 @@ class Product(models.Model):
     )
 
     image = models.ImageField(
-        upload_to="products/",
         verbose_name="Product Image",
         blank=True,
         null=True,
-        # validators=[FileExtensionValidator(allowed_extensions=["jpg", "jpeg", "png"])]
-        # default="products/default.jpg"
+        validators=[FileExtensionValidator(allowed_extensions=["jpg", "jpeg", "png"])],
+        upload_to=product_image_upload_to,
     )
-
-    # def product_image_upload_to(self, filename):
-    #     # Store files under products/<product_id>/<filename>
-    #     return f"products/{self.id}/{filename}"
 
     class Meta:
         verbose_name = "Product"

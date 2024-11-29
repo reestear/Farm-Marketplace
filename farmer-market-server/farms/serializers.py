@@ -1,21 +1,24 @@
-from farms.models import Farm, FarmProduct
-from products.models import Product
-
-# farms/serializers.py
+from farms.models import Farm, FarmProduct, FarmProductImage
 from rest_framework import serializers
 from users.models import User
 from users.serializers import UserSerializer
 
 
-class FarmProductSerializer(serializers.Serializer):
-    farm_id = serializers.PrimaryKeyRelatedField(queryset=Farm.objects.all())
-    product_id = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all())
+class FarmProductImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FarmProductImage
+        fields = "__all__"
+        read_only_fields = ["id", "uploaded_at", "farm_product"]
 
-    def create(self, validated_data):
-        farm = validated_data.get("farm_id")
-        product = validated_data.get("product_id")
-        farm_product = FarmProduct.objects.create(farm=farm, product=product)
-        return farm_product
+
+class FarmProductSerializer(serializers.ModelSerializer):
+    images = FarmProductImageSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = FarmProduct
+        fields = "__all__"
+
+        read_only_fields = ["id", "image"]
 
 
 class FarmSerializer(serializers.ModelSerializer):
@@ -39,7 +42,6 @@ class FarmSerializer(serializers.ModelSerializer):
         read_only_fields = ["id"]
 
     def create(self, validated_data):
-        # farmer is already handled by the PrimaryKeyRelatedField, no need to pop or fetch manually
         print("validated_data: ", validated_data)
         return Farm.objects.create(**validated_data)
 
@@ -49,7 +51,6 @@ class FarmSerializer(serializers.ModelSerializer):
         instance.location = validated_data.get("location", instance.location)
         instance.resources = validated_data.get("resources", instance.resources)
 
-        # Farmer can be updated if passed in validated_data
         if "farmer" in validated_data:
             instance.farmer = validated_data.get("farmer", instance.farmer)
 
