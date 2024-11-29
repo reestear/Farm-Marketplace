@@ -1,5 +1,3 @@
-import uuid
-
 from django.core.exceptions import ValidationError
 from django.db import models
 from products.models import Product, UnitType
@@ -37,12 +35,6 @@ class FarmProductImage(models.Model):
 
 
 class FarmProduct(models.Model):
-    id = models.UUIDField(
-        primary_key=True,
-        default=uuid.uuid4,
-        editable=False,
-        unique=True,
-    )
 
     farm = models.ForeignKey(
         Farm,
