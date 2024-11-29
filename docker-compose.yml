@@ -28,6 +28,8 @@ services:
       - "80:80"
     depends_on:
       - app
+    
+  # hello world
 
   postgres_db:
     image: postgres:17
