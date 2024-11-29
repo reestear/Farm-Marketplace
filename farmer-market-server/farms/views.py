@@ -1,12 +1,16 @@
-from core.utils.response_utils import SuccessResponse
+from core.permissions import IsAdministrator, IsFarmer
+from core.utils.response_utils import ErrorResponse, SuccessResponse
 from drf_spectacular.utils import extend_schema, extend_schema_view
-from products.models import Product
-from rest_framework import viewsets
+from rest_framework import generics, status, viewsets
+from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
-from .models import Farm, FarmProduct
-from .serializers import FarmProductSerializer, FarmSerializer
+from .models import Farm, FarmProduct, FarmProductImage
+from .serializers import (
+    FarmProductImageSerializer,
+    FarmProductSerializer,
+    FarmSerializer,
+)
 
 
 @extend_schema_view(
@@ -42,6 +46,8 @@ from .serializers import FarmProductSerializer, FarmSerializer
     ),
 )
 class FarmViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsFarmer, IsAdministrator]
+
     queryset = Farm.objects.all()
     serializer_class = FarmSerializer
     lookup_field = "id"
@@ -49,40 +55,137 @@ class FarmViewSet(viewsets.ModelViewSet):
     http_method_names = ["get", "post", "patch", "delete"]
 
 
-# Add product to farm
-
-
-class FarmProductView(APIView):
-
-    @extend_schema(
-        summary="Add Product to Farm",
-        description="Add a product to a farm",
-        request=FarmProductSerializer,  # Include serializer for input validation
-        responses={
-            201: FarmProductSerializer
-        },  # Response can include the created object
+@extend_schema_view(
+    post=extend_schema(
+        summary="Create Farm Product Image",
+        description="Create a farm product image",
+        request={
+            "multipart/form-data": {
+                "type": "object",
+                "properties": {
+                    "image": {
+                        "type": "string",
+                        "format": "binary",
+                        "description": "The image file to upload.",
+                    }
+                },
+                "required": ["image"],
+            }
+        },
+        responses={201: FarmProductImageSerializer()},
     )
-    def post(self, request, farm_id, product_id):
-        serializer = FarmProductSerializer(
-            data={"farm_id": farm_id, "product_id": product_id}
-        )
-        if serializer.is_valid():
-            serializer.save()  # Save the validated data
-            return SuccessResponse(
-                {"message": "Successfully added Product to Farm"}, status=201
+)
+class FarmProductImageCreateView(generics.CreateAPIView):
+    queryset = FarmProductImage.objects.all()
+    serializer_class = FarmProductImageSerializer
+
+    def perform_create(self, serializer):
+        farm_product_id = self.kwargs.get("farm_product_id")
+        farm_product = generics.get_object_or_404(FarmProduct, id=farm_product_id)
+        serializer.save(farm_product=farm_product)
+
+
+@extend_schema_view(
+    delete=extend_schema(
+        summary="Delete Farm Product Image",
+        description="Delete a farm product image",
+        responses={
+            204: SuccessResponse,
+            404: ErrorResponse,
+        },
+    )
+)
+class FarmProductImageDeleteView(generics.DestroyAPIView):
+    queryset = FarmProductImage.objects.all()
+
+    def delete(self, request, *args, **kwargs):
+        farm_product_id = kwargs.get("farm_product_id")
+        image_id = kwargs.get("image_id")
+        try:
+            farm_product_image = FarmProductImage.objects.get(
+                id=image_id, farm_product_id=farm_product_id
             )
-        return Response(serializer.errors, status=400)
+            farm_product_image.delete()
+
+            return SuccessResponse(
+                {"message": "Image was deleted succesfully"},
+                status=status.HTTP_204_NO_CONTENT,
+            )
+        except FarmProductImage.DoesNotExist:
+            return ErrorResponse(data={"message": "Image not found."})
+
+
+class FarmProductViewSet(viewsets.ViewSet):
+    def get_queryset(self):
+        return FarmProduct.objects.all()
 
     @extend_schema(
-        summary="Delete Product from Farm",
-        description="Delete a product from a farm",
+        summary="Create Farm Product",
+        description="Create a farm product.",
+        request=FarmProductSerializer,
+        responses={201: FarmProductSerializer},
+    )
+    def create(self, request):
+        serializer = FarmProductSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @extend_schema(
+        summary="List Farm Products",
+        description="List all farm products.",
+        responses={200: FarmProductSerializer(many=True)},
+    )
+    def list(self, request):
+        farm_products = self.get_queryset()
+        serializer = FarmProductSerializer(farm_products, many=True)
+        return Response(serializer.data)
+
+    @extend_schema(
+        summary="Retrieve Farm Product",
+        description="Retrieve a farm product.",
+        responses={200: FarmProductSerializer},
+    )
+    def retrieve(self, request, farm_id, product_id):
+        farm_product = self.get_object(farm_id, product_id)
+        serializer = FarmProductSerializer(farm_product)
+        return Response(serializer.data)
+
+    @extend_schema(
+        summary="Update Farm Product",
+        description="Update a farm product.",
+        request=FarmProductSerializer,
+        responses={201: FarmProductSerializer},
+    )
+    def partial_update(self, request, farm_id, product_id):
+        farm_product = self.get_object(farm_id, product_id)
+        serializer = FarmProductSerializer(
+            farm_product, data=request.data, partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+    @extend_schema(
+        summary="Delete Farm Product",
+        description="Delete a farm product.",
         responses={204: None},
     )
-    def delete(self, request, farm_id, product_id):
-        farm = Farm.objects.get(id=farm_id)
-        product = Product.objects.get(id=product_id)
-        farm_product = FarmProduct.objects.get(farm=farm, product=product)
+    def destroy(self, request, farm_id, product_id):
+        farm_product = self.get_object(farm_id, product_id)
         farm_product.delete()
-        return SuccessResponse(
-            {"message": "Successfully deleted Product from Farm"}, status=204
-        )
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def get_object(self, farm_id, product_id):
+        return FarmProduct.objects.get(farm_id=farm_id, product_id=product_id)
+
+    @extend_schema(
+        summary="List Farm Products by Farmer",
+        description="List all farm products by a specific farmer.",
+        responses={200: FarmProductSerializer(many=True)},
+    )
+    @action(detail=False, methods=["get"])
+    def by_farmer(self, request, farmer_id):
+        farm_products = FarmProduct.objects.filter(farm__farmer__id=farmer_id)
+        serializer = FarmProductSerializer(farm_products, many=True)
+        return Response(serializer.data)

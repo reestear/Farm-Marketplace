@@ -1,4 +1,4 @@
-from core.permissions import IsAdministrator
+# from core.permissions import IsAdministrator
 from core.utils.response_utils import (
     ErrorResponse,
     SuccessResponse,
@@ -70,12 +70,6 @@ class ProductImageViewSet(viewsets.ViewSet):
         product = get_object_or_404(Product, pk=pk)
         serializer = ProductImageSerializer(product, data=request.data, partial=True)
 
-        # if product.image is not None:
-        #     return ErrorResponse(
-        #         {"detail": "Product already has an image."},
-        #         status=status.HTTP_400_BAD_REQUEST,
-        #     )
-
         if product.image:
             product.image.delete()
             product.image = None
@@ -85,67 +79,6 @@ class ProductImageViewSet(viewsets.ViewSet):
             serializer.save()
             return SuccessResponse(serializer.data, status=status.HTTP_200_OK)
         return ErrorResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    # @extend_schema(
-    #     summary="Update Product Image",
-    #     description="Update an existing product image.",
-    #     request={
-    #         "multipart/form-data": {
-    #             "type": "object",
-    #             "properties": {
-    #                 "image": {
-    #                     "type": "string",
-    #                     "format": "binary",
-    #                     "description": "The image file to upload.",
-    #                 }
-    #             },
-    #             "required": ["image"],
-    #         }
-    #     },
-    #     responses={
-    #         200: create_response_schema(
-    #             {
-    #                 "type": "object",
-    #                 "properties": {
-    #                     "image_url": {
-    #                         "type": "string",
-    #                         "format": "url",
-    #                         "example": "http://example.com/media/products/images/product_image.jpg",
-    #                     }
-    #                 },
-    #                 "required": ["image_url"],
-    #             },
-    #             status="success",
-    #         ),
-    #         400: create_response_schema(
-    #             {
-    #                 "type": "object",
-    #                 "properties": {
-    #                     "message": {
-    #                         "type": "string",
-    #                         "example": "File update failed.",
-    #                     }
-    #                 },
-    #                 "required": ["message"],
-    #             },
-    #             status="error",
-    #         ),
-    #     },
-    # )
-    # @action(detail=True, methods=["patch"], url_path="update-image")
-    # def update_image(self, request, pk=None):
-    #     product = get_object_or_404(Product, pk=pk)
-    #     serializer = ProductImageSerializer(product, data=request.data, partial=True)
-
-    #     if product.image:
-    #         product.image.delete()
-    #         product.image = None
-    #         product.save()
-
-    #     if serializer.is_valid():
-    #         serializer.save()
-    #         return SuccessResponse(serializer.data, status=status.HTTP_200_OK)
-    #     return ErrorResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @extend_schema(
         summary="Delete Product Image",

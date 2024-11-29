@@ -1,3 +1,5 @@
+import uuid
+
 from django.core.exceptions import ValidationError
 from django.db import models
 from products.models import Product, UnitType
@@ -5,7 +7,43 @@ from products.models import Product, UnitType
 from .farm_model import Farm
 
 
+def farm_product_image_upload_to(inst, filename):
+    return f"farm-products/{inst.farm_product.id}/{filename}"
+
+
+class FarmProductImage(models.Model):
+    farm_product = models.ForeignKey(
+        "FarmProduct",
+        on_delete=models.CASCADE,
+        related_name="images",
+    )
+
+    image = models.ImageField(
+        upload_to=farm_product_image_upload_to,
+        verbose_name="Farm Product Image",
+    )
+
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def delete(self, *args, **kwargs):
+        if self.image:
+            self.image.delete()
+
+        self.image = None
+        super().delete(*args, **kwargs)
+
+    def __str__(self):
+        return f"Image for Farm Product: {self.farm_product.product.name} from Farm: {self.farm_product.farm.name}"
+
+
 class FarmProduct(models.Model):
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+        unique=True,
+    )
+
     farm = models.ForeignKey(
         Farm,
         on_delete=models.CASCADE,
@@ -32,11 +70,8 @@ class FarmProduct(models.Model):
         verbose_name="Product Description",
     )
 
-    image_url = models.URLField(
-        max_length=500,
-        blank=True,
-        verbose_name="Image URL",
-    )
+    class Meta:
+        unique_together = ("farm", "product")
 
     def clean(self):
         super().clean()

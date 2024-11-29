@@ -1,12 +1,29 @@
 from django.contrib import admin
 
-from .models import Farm, FarmProduct
+from .models import Farm, FarmProduct, FarmProductImage
+
+
+class FarmProductImageInline(admin.StackedInline):
+    model = FarmProductImage
+    extra = 1
+    readonly_fields = ["uploaded_at"]
+
+
+@admin.register(FarmProduct)
+class FarmProductAdmin(admin.ModelAdmin):
+    list_display = ("id", "farm", "product", "price", "quantity")
+    search_fields = ("farm__name", "product__name")
+    list_display_links = ("id", "farm", "product")
+    ordering = ("id",)
+    inlines = [FarmProductImageInline]
 
 
 class FarmProductInline(admin.StackedInline):
     model = FarmProduct
-    extra = 1  # Number of extra forms to display
+    extra = 1
     autocomplete_fields = ["product"]
+
+    show_change_link = True
 
 
 @admin.register(Farm)
