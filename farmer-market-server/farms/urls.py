@@ -27,12 +27,12 @@ urlpatterns = [
         FarmProductViewSet.as_view({"get": "by_farmer"}),
     ),
     path(
-        "farm-products/<uuid:farm_product_id>/add-image/",
+        "farm-products/<int:farm_product_id>/add-image/",
         FarmProductImageCreateView.as_view(),
         name="add_farm_product_image",
     ),
     path(
-        "farm-products/<uuid:farm_product_id>/remove-image/<int:image_id>/",
+        "farm-products/<int:farm_product_id>/remove-image/<int:image_id>/",
         FarmProductImageDeleteView.as_view(),
         name="remove_farm_product_image",
     ),
