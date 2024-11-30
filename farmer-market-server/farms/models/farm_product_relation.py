@@ -35,7 +35,6 @@ class FarmProductImage(models.Model):
 
 
 class FarmProduct(models.Model):
-
     farm = models.ForeignKey(
         Farm,
         on_delete=models.CASCADE,
