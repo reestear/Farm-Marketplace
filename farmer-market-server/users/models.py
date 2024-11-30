@@ -10,7 +10,9 @@ from django.contrib.auth.models import (
 from django.core.validators import EmailValidator
 from django.db import models
 
-# users/models.py
+
+def profile_images_upload_to(instance, filename):
+    return f"profile-images/{instance.id}/{filename}"
 
 
 class UserManager(BaseUserManager):
@@ -96,6 +98,12 @@ class User(AbstractBaseUser, PermissionsMixin, DateStampedModel):
         default=UserType.BUYER,
         verbose_name="User Type",
     )
+    image = models.ImageField(
+        upload_to=profile_images_upload_to,
+        null=True,
+        blank=True,
+        verbose_name="Profile Picture",
+    )
 
     # Required fields for Django
     is_staff = models.BooleanField(default=False, verbose_name="Staff Status")
@@ -128,10 +136,11 @@ class User(AbstractBaseUser, PermissionsMixin, DateStampedModel):
             )
         ]
 
-    def save(self, *args, **kwargs):
-        if self.user_type != UserType.FARMER:
-            self.farmer_status = None
-        super().save(*args, **kwargs)
+    def delete(self, *args, **kwargs):
+        if self.image:
+            self.image.delete()
+
+        super(User, self).delete(*args, **kwargs)
 
     def __str__(self):
         return f"{self.email} ({self.user_type})"

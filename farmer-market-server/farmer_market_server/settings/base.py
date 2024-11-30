@@ -103,6 +103,7 @@ REST_AUTH = {
     "USE_JWT": True,
     "JWT_AUTH_COOKIE": "acc_tok",
     "JWT_AUTH_REFRESH_COOKIE": "ref_tok",
+    "JWT_AUTH_HTTPONLY": False,
     "USER_DETAILS_SERIALIZER": "authentication.serializers.CustomUserDetailsSerializer",
     "JWT_TOKEN_CLAIMS_SERIALIZER": "authentication.serializers.CustomJWTSerializer",
 }
