@@ -46,8 +46,6 @@ from .serializers import (
     ),
 )
 class FarmViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsFarmer, IsAdministrator]
-
     queryset = Farm.objects.all()
     serializer_class = FarmSerializer
     lookup_field = "id"
