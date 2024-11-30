@@ -1,10 +1,13 @@
-from core.permissions import IsAdministrator, IsFarmer
 from core.utils.response_utils import ErrorResponse, SuccessResponse
-from drf_spectacular.utils import extend_schema, extend_schema_view
+from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
+from rest_framework import filters as drf_filters
 from rest_framework import generics, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from .filters import FarmProductFilter
 from .models import Farm, FarmProduct, FarmProductImage
 from .serializers import (
     FarmProductImageSerializer,
@@ -114,6 +117,10 @@ class FarmProductImageDeleteView(generics.DestroyAPIView):
 
 
 class FarmProductViewSet(viewsets.ViewSet):
+    filter_backends = [DjangoFilterBackend, drf_filters.OrderingFilter]
+    filterset_class = FarmProductFilter
+    ordering_fields = ["price", "quantity"]
+
     def get_queryset(self):
         return FarmProduct.objects.all()
 
@@ -131,13 +138,32 @@ class FarmProductViewSet(viewsets.ViewSet):
 
     @extend_schema(
         summary="List Farm Products",
-        description="List all farm products.",
+        description="List all farm products with optional filtering by price, quantity, and location.",
         responses={200: FarmProductSerializer(many=True)},
+        parameters=[
+            OpenApiParameter(
+                "min_price", OpenApiTypes.NUMBER, description="Minimum price"
+            ),
+            OpenApiParameter(
+                "max_price", OpenApiTypes.NUMBER, description="Maximum price"
+            ),
+            OpenApiParameter(
+                "min_quantity", OpenApiTypes.NUMBER, description="Minimum quantity"
+            ),
+            OpenApiParameter(
+                "max_quantity", OpenApiTypes.NUMBER, description="Maximum quantity"
+            ),
+            OpenApiParameter("location", OpenApiTypes.STR, description="Farm location"),
+        ],
     )
     def list(self, request):
-        farm_products = self.get_queryset()
+        farm_products = self.filter_queryset(self.get_queryset())
         serializer = FarmProductSerializer(farm_products, many=True)
         return Response(serializer.data)
+
+    def filter_queryset(self, queryset):
+        filter_backend = DjangoFilterBackend()
+        return filter_backend.filter_queryset(self.request, queryset, self)
 
     @extend_schema(
         summary="Retrieve Farm Product",
