@@ -32,6 +32,7 @@ class CustomUserDetailsSerializer(UserDetailsSerializer):
             "phone_number",
             "is_active",
             "farmer_status",
+            "image",
         )
 
         read_only_fields = UserDetailsSerializer.Meta.read_only_fields + (
@@ -41,6 +42,33 @@ class CustomUserDetailsSerializer(UserDetailsSerializer):
             "is_active",
             "farmer_status",
         )
+
+        extra_kwargs = {
+            "first_name": {"required": False},
+            "last_name": {"required": False},
+            "phone_number": {"required": False},
+            "image": {"required": False},
+        }
+
+    def update(self, instance, validated_data):
+        # Handle image update logic
+        image = validated_data.get("image", None)
+
+        if image:
+            # If new image is provided, delete the old one
+            if instance.image:
+                instance.image.delete(save=False)
+            instance.image = image  # Set the new image
+
+        # Handle other fields like first_name, last_name, etc.
+        instance.first_name = validated_data.get("first_name", instance.first_name)
+        instance.last_name = validated_data.get("last_name", instance.last_name)
+        instance.phone_number = validated_data.get(
+            "phone_number", instance.phone_number
+        )
+
+        instance.save()  # Save the updated instance
+        return instance
 
     def to_representation(self, instance):
         return super().to_representation(instance)
@@ -66,6 +94,7 @@ class CustomRegisterSerializer(RegisterSerializer):
         ],
         required=True,
     )
+    image = serializers.ImageField(required=False)
 
     class Meta:
         model = User
@@ -76,6 +105,7 @@ class CustomRegisterSerializer(RegisterSerializer):
             "phone_number",
             "user_type",
             "password",
+            "image",
         ]
 
     @property
@@ -87,6 +117,7 @@ class CustomRegisterSerializer(RegisterSerializer):
             "phone_number": self.validated_data.get("phone_number", ""),
             "user_type": self.validated_data.get("user_type", ""),
             "password": self.validated_data.get("password1", ""),
+            "image": self.validated_data.get("image", ""),
         }
 
     def save(self, request):
@@ -96,6 +127,7 @@ class CustomRegisterSerializer(RegisterSerializer):
             last_name=self.cleaned_data["last_name"],
             phone_number=self.cleaned_data["phone_number"],
             user_type=self.cleaned_data["user_type"],
+            image=self.cleaned_data["image"],
         )
         user.set_password(self.cleaned_data["password"])
         user.save()

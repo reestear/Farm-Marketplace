@@ -141,6 +141,8 @@ class FarmProductViewSet(viewsets.ViewSet):
         description="List all farm products with optional filtering by price, quantity, and location.",
         responses={200: FarmProductSerializer(many=True)},
         parameters=[
+            OpenApiParameter("farm_id", OpenApiTypes.UUID, description="Farm ID"),
+            OpenApiParameter("product_id", OpenApiTypes.UUID, description="Product ID"),
             OpenApiParameter(
                 "min_price", OpenApiTypes.NUMBER, description="Minimum price"
             ),
