@@ -61,6 +61,7 @@ INSTALLED_APPS = [
 SITE_ID = 1
 
 LOGIN_REDIRECT_URL = os.getenv("LOGIN_REDIRECT_URL")
+PASSWORD_RESET_REDIRECT_URL = os.getenv("PASSWORD_RESET_REDIRECT_URL")
 
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
@@ -79,7 +80,7 @@ ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_AUTHENTICATION_METHOD = "email"
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
-# ACCOUNT_ADAPTER = "authentication.adapters.CustomAccountAdapter"
+ACCOUNT_ADAPTER = "authentication.adapters.CustomAccountAdapter"
 
 AUTH_USER_MODEL = "users.User"
 
