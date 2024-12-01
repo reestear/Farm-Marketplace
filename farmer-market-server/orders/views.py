@@ -74,7 +74,7 @@ class BuyerOrderListView(generics.ListAPIView):
 
 
 class OrderFarmProductListView(generics.ListAPIView):
-    permission_classes = [IsBuyer]
+    permission_classes = [IsBuyer, IsFarmer]
 
     serializer_class = OrderFarmProductSerializer
     filter_backends = [DjangoFilterBackend]
