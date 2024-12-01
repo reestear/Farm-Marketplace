@@ -73,6 +73,9 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
     ],
+    "DEFAULT_FILTER_BACKENDS": [
+        "django_filters.rest_framework.DjangoFilterBackend",
+    ],
 }
 
 ACCOUNT_USER_MODEL_USERNAME_FIELD = "email"
@@ -200,4 +203,7 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "Farmer Market API",
     "DESCRIPTION": "Farmer Market API",
     "VERSION": "1.0.0",
+    "COMPONENT_SPLIT_REQUEST": True,
+    "COMPONENT_SPLIT_RESPONSE": True,
+    "POSTPROCESSING_HOOKS": ["drf_spectacular.hooks.postprocess_schema_enums"],
 }
