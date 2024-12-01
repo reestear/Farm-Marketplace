@@ -1,4 +1,4 @@
-from core.permissions import IsBuyer, IsFarmer
+from core.permissions import IsBuyer, IsBuyerOrFarmer, IsFarmer
 from core.utils.response_utils import ErrorResponse, SuccessResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import (
@@ -74,7 +74,7 @@ class BuyerOrderListView(generics.ListAPIView):
 
 
 class OrderFarmProductListView(generics.ListAPIView):
-    permission_classes = [IsBuyer, IsFarmer]
+    permission_classes = [IsBuyerOrFarmer]
 
     serializer_class = OrderFarmProductSerializer
     filter_backends = [DjangoFilterBackend]

@@ -15,6 +15,15 @@ class IsAdministrator(BasePermission):
         )
 
 
+class IsBuyerOrFarmer(BasePermission):
+    def has_permission(self, request, view):
+        return request.user.is_authenticated and (
+            request.user.user_type == UserType.BUYER
+            or request.user.user_type == UserType.FARMER
+            or request.user.user_type == UserType.SUPERUSER
+        )
+
+
 class IsBuyer(BasePermission):
     """
     Allows access only to users of type 'Administrator'.
