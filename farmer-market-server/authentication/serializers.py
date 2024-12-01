@@ -6,7 +6,7 @@ from dj_rest_auth.serializers import (
 )
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
-from users.models import User, UserType
+from users.models import FarmerStatus, User, UserType
 
 
 class CustomJWTSerializer(JWTSerializer):
@@ -128,6 +128,11 @@ class CustomRegisterSerializer(RegisterSerializer):
             phone_number=self.cleaned_data["phone_number"],
             user_type=self.cleaned_data["user_type"],
             image=self.cleaned_data["image"],
+            farmer_status=(
+                FarmerStatus.PENDING
+                if self.cleaned_data["user_type"] == UserType.FARMER
+                else None
+            ),
         )
         user.set_password(self.cleaned_data["password"])
         user.save()

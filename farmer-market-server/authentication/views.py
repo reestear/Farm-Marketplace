@@ -161,6 +161,9 @@ class CustomRegisterView(RegisterView):
                 if user.user_type == UserType.FARMER:
                     user.farmer_status = FarmerStatus.PENDING
                     user.save(update_fields=["farmer_status"])
+                else:
+                    user.farmer_status = None
+                    user.save(update_fields=["farmer_status"])
 
                 user.is_active = False
                 user.save(update_fields=["is_active"])
