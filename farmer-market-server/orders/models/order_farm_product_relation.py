@@ -55,6 +55,10 @@ class OrderFarmProduct(models.Model):
     def clean(self):
         super().clean()
 
+        # If for some reason the product is not specified when the entry is already created, return None
+        if not self.product:
+            return None
+
         # Check if the farm and product are specified during creation
         if not self.pk:
             if not self.farm:
@@ -62,9 +66,11 @@ class OrderFarmProduct(models.Model):
             if not self.product:
                 raise ValidationError("Product must be specified during creation.")
 
-        # If for some reason the product is not specified when the entry is already created, return None
-        if not self.product:
-            return None
+            # Check if the farm and product has the entry in FarmProduct
+            if not self.farm.products.filter(id=self.product.id).exists():
+                raise ValidationError(
+                    "Farm and Product must have a relation in FarmProduct."
+                )
 
         if self.product.unit_type in [
             UnitType.KILOGRAMS,

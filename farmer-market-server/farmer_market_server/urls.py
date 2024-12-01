@@ -15,7 +15,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
-from authentication.views import CustomConfirmEmailView
+# from authentication.views import CustomConfirmEmailView
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
@@ -32,6 +32,7 @@ urlpatterns = [
     path("api/", include("reviews.urls")),
     path("api/", include("products.urls")),
     path("api/", include("farms.urls")),
+    path("api/", include("orders.urls")),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path(
         "api/docs/",

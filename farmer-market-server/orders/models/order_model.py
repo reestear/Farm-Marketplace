@@ -41,12 +41,6 @@ class Order(models.Model):
         default=OrderStatusType.CART,
     )
 
-    # amount = models.DecimalField(
-    #     max_digits=10,
-    #     decimal_places=2,
-    #     verbose_name="Order Amount",
-    # )
-
     @property
     def amount(self):
         """
