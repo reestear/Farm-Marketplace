@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import User
+from .models import FarmerStatus, User, UserType
 
 
 class UserSerializer(serializers.ModelSerializer):
