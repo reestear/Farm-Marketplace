@@ -1,13 +1,15 @@
 from core.permissions import IsAdministrator
 from core.utils.response_utils import ErrorResponse, SuccessResponse
+from django.conf import settings
+from django.core.mail import send_mail
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
-from rest_framework import viewsets
+from rest_framework import status, viewsets
 from rest_framework.exceptions import ValidationError
 from rest_framework.views import APIView
 
 from .models import FarmerStatus, User, UserType
-from .serializers import UserSerializer
+from .serializers import FarmerRejectionSerializer, UserSerializer
 
 
 @extend_schema_view(
@@ -135,15 +137,36 @@ class AdminRejectFarmerView(APIView):
 
     @extend_schema(
         summary="Reject Farmer",
-        description="Reject a farmer",
+        description="Reject a farmer with a reason and send an email",
+        request=FarmerRejectionSerializer,
         responses={200: UserSerializer()},
     )
     def post(self, request, id):
         user = User.objects.get(id=id)
 
         if user.user_type != UserType.FARMER:
-            return ErrorResponse({"error": "Only farmers can be rejected"})
+            return SuccessResponse(
+                {"error": "Only farmers can be rejected"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
-        user.farmer_status = FarmerStatus.REJECTED
-        user.save(update_fields=["farmer_status"])
-        return SuccessResponse(UserSerializer(user).data)
+        serializer = FarmerRejectionSerializer(data=request.data)
+        if serializer.is_valid():
+            reason = serializer.validated_data["reason"]
+
+            # Update farmer status
+            user.farmer_status = FarmerStatus.REJECTED
+            user.save(update_fields=["farmer_status"])
+
+            # Send rejection email
+            send_mail(
+                subject="Your Farmer Application Rejected",
+                message=f"Dear {user.first_name},\n\nYour application has been rejected for the following reason:\n\n{reason}\n\nThank you.",
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=[user.email],
+                fail_silently=False,
+            )
+
+            return SuccessResponse(UserSerializer(user).data, status=status.HTTP_200_OK)
+
+        return ErrorResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
