@@ -1,6 +1,10 @@
 from rest_framework import serializers
 
-from .models import FarmerStatus, User, UserType
+from .models import User
+
+
+class FarmerRejectionSerializer(serializers.Serializer):
+    reason = serializers.CharField(max_length=5000)
 
 
 class UserSerializer(serializers.ModelSerializer):
