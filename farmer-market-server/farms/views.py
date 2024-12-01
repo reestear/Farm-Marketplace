@@ -7,7 +7,7 @@ from rest_framework import generics, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from .filters import FarmProductFilter
+from .filters import FarmFilter, FarmProductFilter
 from .models import Farm, FarmProduct, FarmProductImage
 from .serializers import (
     FarmProductImageSerializer,
@@ -54,6 +54,9 @@ class FarmViewSet(viewsets.ModelViewSet):
     lookup_field = "id"
     lookup_url_kwarg = "id"
     http_method_names = ["get", "post", "patch", "delete"]
+
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = FarmFilter
 
 
 @extend_schema_view(

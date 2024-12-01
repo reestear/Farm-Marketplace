@@ -1,6 +1,14 @@
 from django_filters import rest_framework as filters
 
-from .models import FarmProduct
+from .models import Farm, FarmProduct
+
+
+class FarmFilter(filters.FilterSet):
+    farmer_id = filters.UUIDFilter(field_name="farmer__id", lookup_expr="exact")
+
+    class Meta:
+        model = Farm
+        fields = ["farmer_id"]
 
 
 class FarmProductFilter(filters.FilterSet):
